@@ -54,7 +54,7 @@ class Evaluator{
     func handleSet(nodes: [Node], environment: inout Environment) throws -> Node? {
         if case .symbol(let def) = nodes[0] {
             if let env = environment.find(key: def) {
-                let result = try eval(node: nodes[2], env: &environment)
+                let result = try eval(node: nodes[1], env: &environment)
                 env[def] = result
                 return nil
             } else {
@@ -67,10 +67,11 @@ class Evaluator{
 
     func handleLambda(nodes: [Node], environment: Environment) throws -> Node? {
         var params = [Node]()
-        if case .list(let ls) = nodes[0] {
+        let parameters = nodes[0]
+        if case .list(let ls) = parameters {
             params = ls
         } else {
-            params = [nodes[0]]
+            params = [parameters]
         }
         let stringParams: [String] = try params.map {
             if case let .symbol(sym) = $0 {
@@ -79,23 +80,22 @@ class Evaluator{
                 throw Error.evaluator("lambda parameters should be symbols.")
             }
         }
-        let body = nodes[1]
+        let body = Array(nodes.dropFirst())
         return Node.lambda(stringParams, body, environment)
     }
 
-    func handleProc(procedure: Node, nodes: [Node], environment: inout Environment) throws -> Node? {
+    func handleProc(procedure: Node, arguments: [Node], environment: inout Environment) throws -> Node? {
         if let proc = try eval(node: procedure, env: &environment){
             var args = [Node]()
-            for element in nodes {
+            for element in arguments {
                 if let arg = try eval(node: element, env: &environment) {
                     args.append(arg)
                 }
             }
             if case .function(let fn) = proc {
                 return try fn(args)
-            } else if case .lambda(let params,  let body, let environ) = proc {
-                var inner = Environment(keys: params, values: args, parent: environ)
-                return try eval(node: body, env: &inner)
+            } else if case .lambda = proc {
+                return try callLambda(lambda: proc, arguments: args)
             } else {
                 throw Error.evaluator("Problem handling procedure.")
             }
@@ -103,8 +103,19 @@ class Evaluator{
             return nil
         }
     }
-    
-    
+
+    func callLambda(lambda: Node, arguments: [Node]) throws -> Node? {
+        if case .lambda(let params,  let body, let environ) = lambda {
+            var inner = Environment(keys: params, values: arguments, parent: environ)
+            var last: Node?
+            for expression in body {
+                last = try eval(node: expression, env: &inner)
+            }
+            return last 
+        }
+        throw Error.evaluator("not a lambda")
+    }
+
     func handleList(nodes: [Node], env: inout Environment) throws -> Node? {
         var list = nodes
         let first = list.removeFirst()
@@ -131,16 +142,22 @@ class Evaluator{
                 }
                 return try handleSet(nodes: list, environment: &env)
             case "lambda":
-                guard list.count == 2 else {
+                guard !list.isEmpty else {
                     throw Error.evaluator("lambda usage is (lambda (params) body))")
                 }
                 return try handleLambda(nodes: list, environment: env)
             default:
-                return try handleProc(procedure: first, nodes: list, environment: &env)
+                return try handleProc(procedure: first, arguments: list, environment: &env)
             } 
-        } else {
-            throw Error.evaluator("first atom in list is not a procedure.")
         }
+        if case .list(let ls) = first {
+            if let result = try handleList(nodes: ls, env: &env) {
+                if case .lambda = result {
+                    return try callLambda(lambda: result, arguments: list)
+                }
+            }
+        }
+        throw Error.evaluator("first atom in list is not a procedure.")
     }
 
     func eval(node: Node, env: inout Environment) throws -> Node? {
@@ -155,6 +172,7 @@ class Evaluator{
             }
             return try handleList(nodes: list, env: &env)
         default:
+            print(node)
             throw Error.evaluator("Evaluation error.")
         }
     }

@@ -13,7 +13,7 @@ enum Node {
     case boolean(Bool)
     indirect case list([Node])
     indirect case function(([Node]) throws -> Node)
-    indirect case lambda([String], Node, Environment)
+    indirect case lambda([String], [Node], Environment)
     
     func toString(node: Node? = nil) -> String {
         let nodeToPrint = node ?? self
