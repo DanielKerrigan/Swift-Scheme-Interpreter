@@ -1,5 +1,5 @@
 //
-//  Error.swift
+//  SchemeError.swift
 //  Scheme-Interpreter
 //
 //  Created by Dan Kerrigan on 7/5/16.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum Error: ErrorProtocol {
+enum SchemeError: Error {
     case syntax(String)
     case evaluator(String)
 }

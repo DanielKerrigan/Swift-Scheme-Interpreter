@@ -27,7 +27,7 @@ class Procedures {
             case .number(let number):
                 numbers.append(number)
             default:
-                throw Error.evaluator("Math operators can only be used on numbers.")
+                throw SchemeError.evaluator("Math operators can only be used on numbers.")
             }
         }
         return numbers
@@ -36,14 +36,14 @@ class Procedures {
     class func add(nodes: [Node]) throws -> Node {
         let numbers = try getNumbers(nodes: nodes)
         if numbers.count == 0 { return Node.number(0) }
-        let answer = numbers.reduce(0, combine:+)
+        let answer = numbers.reduce(0, +)
         return Node.number(answer)
     }
 
     class func multiply(nodes: [Node]) throws -> Node {
         let numbers = try this.getNumbers(nodes: nodes)
         if numbers.count == 0 { return Node.number(0) }
-        let answer = numbers.reduce(1, combine:*)
+        let answer = numbers.reduce(1, *)
         return Node.number(answer)
     }
 
@@ -51,7 +51,7 @@ class Procedures {
         let numbers = try this.getNumbers(nodes: nodes)
         if numbers.count == 0 { return Node.number(0) }
         if numbers.count == 1 { return Node.number(-numbers[0]) }
-        let answer = numbers[1..<numbers.endIndex].reduce(numbers[0], combine:-)
+        let answer = numbers[1..<numbers.endIndex].reduce(numbers[0], -)
         return Node.number(answer)
     }
 
@@ -61,19 +61,19 @@ class Procedures {
             if zero_index == 0 {
                 return Node.number(0)
             } else {
-                throw Error.evaluator("Cannot divide by 0.")
+                throw SchemeError.evaluator("Cannot divide by 0.")
             }
         }
 
         if numbers.count == 0 { return Node.number(0) }
-        let answer = numbers[1..<numbers.endIndex].reduce(numbers[0], combine:/)
+        let answer = numbers[1..<numbers.endIndex].reduce(numbers[0], /)
         return Node.number(answer)
     }
 
-    class func comparison(op: (Double, Double) -> Bool) -> ([Node]) throws -> Node {
+    class func comparison(op: @escaping (Double, Double) -> Bool) -> ([Node]) throws -> Node {
         func compare(nodes: [Node]) throws -> Node {
             let numbers = try this.getNumbers(nodes: nodes)
-            if numbers.count < 2 { throw Error.evaluator("Too few arguments for comparison.") }
+            if numbers.count < 2 { throw SchemeError.evaluator("Too few arguments for comparison.") }
             for i in 1..<numbers.endIndex {
                 if !op(numbers[i-1], numbers[i]) {
                     return Node.boolean(false)
@@ -85,37 +85,37 @@ class Procedures {
     }
 
     class func absolute(nodes: [Node]) throws -> Node {
-        guard nodes.count == 1 else { throw Error.evaluator("abs takes one argument.") }
+        guard nodes.count == 1 else { throw SchemeError.evaluator("abs takes one argument.") }
         if case .number(let num) = nodes[0] {
             return Node.number(abs(num))
         } else {
-            throw Error.evaluator("abs requires a number.")
+            throw SchemeError.evaluator("abs requires a number.")
         }
     }
 
     class func car(nodes: [Node]) throws -> Node {
-        guard nodes.count == 1 else { throw Error.evaluator("car takes one argument.") }
+        guard nodes.count == 1 else { throw SchemeError.evaluator("car takes one argument.") }
         if case .list(let list) = nodes[0] {
-            guard list.count > 0 else { throw Error.evaluator("cannot car empty list.") }
+            guard list.count > 0 else { throw SchemeError.evaluator("cannot car empty list.") }
             return list[0]
         } else {
-            throw Error.evaluator("car expects a list.")
+            throw SchemeError.evaluator("car expects a list.")
         }
     }
 
     class func cdr(nodes: [Node]) throws -> Node {
-        guard nodes.count == 1 else { throw Error.evaluator("cdr takes one argument.") }
+        guard nodes.count == 1 else { throw SchemeError.evaluator("cdr takes one argument.") }
         if case .list(var list) = nodes[0] {
-            guard list.count > 0 else { throw Error.evaluator("cannot cdr empty list.") }
+            guard list.count > 0 else { throw SchemeError.evaluator("cannot cdr empty list.") }
             list.removeFirst()
             return Node.list(list)
         } else {
-            throw Error.evaluator("cdr expects a list.")
+            throw SchemeError.evaluator("cdr expects a list.")
         }
-    } 
-    
+    }
+
     class func not(nodes: [Node]) throws -> Node {
-        guard nodes.count == 1 else { throw Error.evaluator("not takes one argument.") }
+        guard nodes.count == 1 else { throw SchemeError.evaluator("not takes one argument.") }
         if case .boolean(let bool) = nodes[0] {
             return Node.boolean(!bool)
         } else {

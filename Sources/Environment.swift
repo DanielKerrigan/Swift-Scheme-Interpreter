@@ -29,11 +29,10 @@ class Environment {
     func find(key: String) -> Environment? {
         if current[key] != nil {
             return self
-        } 
+        }
         if let parent = parent {
             return parent.find(key: key)
         }
         return nil
     }
 }
-

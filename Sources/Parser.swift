@@ -13,23 +13,23 @@ class Parser{
         let ast = try read(tokens: tokenize(string: expression))
         return ast
     }
-    
+
     func tokenize(string: String) -> [String] {
         var padded = string.replacingOccurrences(of: "(", with: " ( ")
         padded = padded.replacingOccurrences(of: ")", with: " ) ")
         return padded.characters.split(separator: " ").map(String.init)
     }
-    
+
     func read(tokens:[String]) throws -> [Node] {
         var stack = [[Node]]()
         var current = [Node]()
-        
+
         for token in tokens {
             if token == "(" {
                 stack.append(current)
                 current = [Node]()
             } else if token == ")" {
-                guard !stack.isEmpty else { throw Error.syntax("Unexpected ')'.") }
+                guard !stack.isEmpty else { throw SchemeError.syntax("Unexpected ')'.") }
                 let list = Node.list(current)
                 current = stack.removeLast()
                 current.append(list)
@@ -40,9 +40,8 @@ class Parser{
             }
         }
 
-        guard stack.isEmpty else { throw Error.syntax("Unexpected EOF.") }
-        
+        guard stack.isEmpty else { throw SchemeError.syntax("Unexpected EOF.") }
+
         return current
     }
 }
-

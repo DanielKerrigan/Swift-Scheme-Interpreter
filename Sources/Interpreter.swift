@@ -22,9 +22,9 @@ public class Interpreter {
                     results.append(result.toString())
                 }
             }
-        } catch Error.syntax(let message) {
+        } catch SchemeError.syntax(let message) {
             results.append("Syntax Error: \(message)")
-        } catch Error.evaluator(let message) {
+        } catch SchemeError.evaluator(let message) {
             results.append("Evaluator Error: \(message)")
         } catch {
             results.append("Error.")

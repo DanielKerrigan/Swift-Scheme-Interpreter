@@ -14,7 +14,7 @@ class Evaluator{
         if let foundEnv = env.find(key: symbol) {
             return foundEnv[symbol]!
         } else {
-            throw Error.evaluator("Cannot find \(symbol)")
+            throw SchemeError.evaluator("Cannot find \(symbol)")
         }
     }
 
@@ -47,10 +47,10 @@ class Evaluator{
             environment[def] = result
             return nil
         } else {
-            throw Error.evaluator("only symbols can be defined.")
+            throw SchemeError.evaluator("only symbols can be defined.")
         }
     }
-    
+
     func handleSet(nodes: [Node], environment: inout Environment) throws -> Node? {
         if case .symbol(let def) = nodes[0] {
             if let env = environment.find(key: def) {
@@ -58,10 +58,10 @@ class Evaluator{
                 env[def] = result
                 return nil
             } else {
-                throw Error.evaluator("variable was not defined before using set!")
+                throw SchemeError.evaluator("variable was not defined before using set!")
             }
         } else {
-            throw Error.evaluator("only symbols can be set.")
+            throw SchemeError.evaluator("only symbols can be set.")
         }
     }
 
@@ -77,7 +77,7 @@ class Evaluator{
             if case let .symbol(sym) = $0 {
                 return sym
             } else {
-                throw Error.evaluator("lambda parameters should be symbols.")
+                throw SchemeError.evaluator("lambda parameters should be symbols.")
             }
         }
         let body = Array(nodes.dropFirst())
@@ -97,7 +97,7 @@ class Evaluator{
             } else if case .lambda = proc {
                 return try callLambda(lambda: proc, arguments: args)
             } else {
-                throw Error.evaluator("Problem handling procedure.")
+                throw SchemeError.evaluator("Problem handling procedure.")
             }
         } else {
             return nil
@@ -111,9 +111,9 @@ class Evaluator{
             for expression in body {
                 last = try eval(node: expression, env: &inner)
             }
-            return last 
+            return last
         }
-        throw Error.evaluator("not a lambda")
+        throw SchemeError.evaluator("not a lambda")
     }
 
     func handleList(nodes: [Node], env: inout Environment) throws -> Node? {
@@ -123,32 +123,32 @@ class Evaluator{
             switch sym {
             case "quote":
                 guard !list.isEmpty  else {
-                    throw Error.evaluator("quote usage is (quote exp))")
+                    throw SchemeError.evaluator("quote usage is (quote exp))")
                 }
                 return list[0]
             case "if":
                 guard list.count >= 2 else {
-                    throw Error.evaluator("if usage is (if test conseq alt)")
+                    throw SchemeError.evaluator("if usage is (if test conseq alt)")
                 }
                 return try handleIf(nodes: list, environment: &env)
             case "define":
                 guard list.count == 2 else {
-                    throw Error.evaluator("define usage is (define var exp)")
+                    throw SchemeError.evaluator("define usage is (define var exp)")
                 }
                 return try handleDefine(nodes: list, environment: &env)
             case "set!":
                 guard list.count == 2 else {
-                    throw Error.evaluator("set! usage is (set! var exp)")
+                    throw SchemeError.evaluator("set! usage is (set! var exp)")
                 }
                 return try handleSet(nodes: list, environment: &env)
             case "lambda":
                 guard !list.isEmpty else {
-                    throw Error.evaluator("lambda usage is (lambda (params) body))")
+                    throw SchemeError.evaluator("lambda usage is (lambda (params) body))")
                 }
                 return try handleLambda(nodes: list, environment: env)
             default:
                 return try handleProc(procedure: first, arguments: list, environment: &env)
-            } 
+            }
         }
         if case .list(let ls) = first {
             if let result = try handleList(nodes: ls, env: &env) {
@@ -157,7 +157,7 @@ class Evaluator{
                 }
             }
         }
-        throw Error.evaluator("first atom in list is not a procedure.")
+        throw SchemeError.evaluator("first atom in list is not a procedure.")
     }
 
     func eval(node: Node, env: inout Environment) throws -> Node? {
@@ -167,13 +167,13 @@ class Evaluator{
         case .number, .boolean:
             return node
         case .list(let list):
-            if list.isEmpty { 
+            if list.isEmpty {
                 return node
             }
             return try handleList(nodes: list, env: &env)
         default:
             print(node)
-            throw Error.evaluator("Evaluation error.")
+            throw SchemeError.evaluator("Evaluation Error.")
         }
     }
 }

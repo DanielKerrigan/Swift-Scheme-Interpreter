@@ -8,7 +8,7 @@ class ParserTests: XCTestCase {
         do {
             let _ = try parser.parse(expression: expression)
             XCTFail("\(error) not thrown.")
-        } catch Error.syntax(let msg) {
+        } catch SchemeError.syntax(let msg) {
             XCTAssertEqual(msg, error, "\(error) should be thrown.")
         } catch {
             XCTFail("Wrong error thrown.")
