@@ -1,13 +1,15 @@
 @testable import SchemeInterpreter
 import XCTest
 
-class MathTests: XCTestCase {
+class ProceduresTests: XCTestCase {
    
     let interpreter = Interpreter()
     
     func performTest(interpret: String, expected: [String], info: String) {
         XCTAssertEqual(interpreter.interpret(schemeString: interpret), expected, info)
     }
+    
+    // Math
 
     func testBasicMath() {
         let schemeString = "(- (/ (-(+ (* 2 5) 13) 1 2) 4 2) (- 5 1.5))" 
@@ -52,6 +54,12 @@ class MathTests: XCTestCase {
         performTest(interpret: "(= 5 5 5)", expected: ["#t"], info: "=: true.")
         performTest(interpret: "(= 5 5 4)", expected: ["#f"], info: "=: false.")
     }
+
+    // Lists
+    /*
+    func testCarCorrect() [
+        performTest(interpret: "")
+    ]*/
 
     static var allTests = [
         ("testBasicMath", testBasicMath),
