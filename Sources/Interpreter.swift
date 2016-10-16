@@ -8,10 +8,15 @@
 import Foundation
 
 public class Interpreter {
-
-    let parser = Parser()
-    let evaluator = Evaluator()
-    var globalEnv = Environment(current: Procedures.initial, parent: nil)
+    let parser: Parser
+    let evaluator: Evaluator
+    var globalEnv: Environment
+    
+    public init() {
+        self.parser = Parser()
+        self.evaluator = Evaluator()
+        self.globalEnv = Environment(current: Procedures.initial, parent: nil)
+    }
 
     public func interpret(schemeString: String) -> [String] {
         var results = [String]()
